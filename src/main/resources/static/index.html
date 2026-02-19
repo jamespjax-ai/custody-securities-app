@@ -1,0 +1,1791 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Custody Securities Application - ISO 20022 Settlement Instruction Processing & Position Management">
+    <title>Custody Securities | ISO 20022 Settlement Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        /* ===== CSS Reset & Variables ===== */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-card: rgba(17, 24, 39, 0.7);
+            --bg-card-hover: rgba(30, 41, 59, 0.8);
+            --bg-glass: rgba(255, 255, 255, 0.03);
+            --border-color: rgba(255, 255, 255, 0.06);
+            --border-glow: rgba(99, 102, 241, 0.3);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-indigo: #6366f1;
+            --accent-indigo-light: #818cf8;
+            --accent-cyan: #06b6d4;
+            --accent-emerald: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+            --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%);
+            --gradient-card: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(6, 182, 212, 0.04) 100%);
+            --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.4);
+            --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.15);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ===== Background Effects ===== */
+        .bg-effects {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .bg-effects::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(6, 182, 212, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 50% 80%, rgba(139, 92, 246, 0.04) 0%, transparent 50%);
+            animation: bgDrift 25s ease-in-out infinite alternate;
+        }
+
+        @keyframes bgDrift {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(-3%, -3%) rotate(3deg);
+            }
+        }
+
+        /* ===== Layout ===== */
+        .app-container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* ===== Header ===== */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 28px;
+            margin-bottom: 32px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            backdrop-filter: blur(20px);
+            animation: slideDown 0.6s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            width: 48px;
+            height: 48px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 700;
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .header-title {
+            font-size: 22px;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 50px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: var(--accent-emerald);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-emerald);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+            }
+
+            50% {
+                opacity: 0.8;
+                box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+            }
+        }
+
+        /* ===== Navigation Tabs ===== */
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            padding: 6px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            margin-bottom: 28px;
+            backdrop-filter: blur(20px);
+            animation: slideDown 0.7s ease-out;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .nav-tab:hover {
+            color: var(--text-primary);
+            background: var(--bg-glass);
+        }
+
+        .nav-tab.active {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .nav-tab svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* ===== Tab Panels ===== */
+        .tab-panel {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== Cards ===== */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: 28px;
+            backdrop-filter: blur(20px);
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            border-color: var(--border-glow);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title .icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .icon-indigo {
+            background: rgba(99, 102, 241, 0.15);
+            color: var(--accent-indigo-light);
+        }
+
+        .icon-cyan {
+            background: rgba(6, 182, 212, 0.15);
+            color: var(--accent-cyan);
+        }
+
+        .icon-emerald {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-emerald);
+        }
+
+        .icon-amber {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent-amber);
+        }
+
+        /* ===== Upload Area ===== */
+        .upload-zone {
+            border: 2px dashed rgba(99, 102, 241, 0.25);
+            border-radius: var(--radius-lg);
+            padding: 48px;
+            text-align: center;
+            transition: var(--transition);
+            cursor: pointer;
+            background: var(--gradient-card);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-zone::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, rgba(99, 102, 241, 0.05) 0%, transparent 70%);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .upload-zone:hover,
+        .upload-zone.drag-over {
+            border-color: var(--accent-indigo);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .upload-zone:hover::before,
+        .upload-zone.drag-over::before {
+            opacity: 1;
+        }
+
+        .upload-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .upload-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .upload-subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .upload-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .upload-btn:active {
+            transform: translateY(0);
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        /* ===== XML Editor ===== */
+        .xml-editor-section {
+            margin-top: 24px;
+        }
+
+        .editor-label {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: var(--text-secondary);
+        }
+
+        .xml-editor {
+            width: 100%;
+            min-height: 300px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            color: var(--accent-cyan);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            resize: vertical;
+            transition: var(--transition);
+        }
+
+        .xml-editor:focus {
+            outline: none;
+            border-color: var(--accent-indigo);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        /* ===== Action Buttons ===== */
+        .action-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--radius-md);
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        /* ===== Processing Log ===== */
+        .process-log {
+            margin-top: 24px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .process-log::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .process-log::-webkit-scrollbar-thumb {
+            background: var(--text-muted);
+            border-radius: 3px;
+        }
+
+        .log-entry {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-size: 13px;
+            animation: logSlide 0.3s ease-out;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        @keyframes logSlide {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .log-time {
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .log-icon {
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .log-msg {
+            color: var(--text-secondary);
+            flex: 1;
+        }
+
+        .log-success .log-msg {
+            color: var(--accent-emerald);
+        }
+
+        .log-error .log-msg {
+            color: var(--accent-rose);
+        }
+
+        .log-info .log-msg {
+            color: var(--accent-cyan);
+        }
+
+        .log-warn .log-msg {
+            color: var(--accent-amber);
+        }
+
+        /* ===== Positions Table ===== */
+        .table-container {
+            overflow-x: auto;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            padding: 14px 20px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        td {
+            padding: 16px 20px;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(99, 102, 241, 0.04);
+        }
+
+        .isin-cell {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-indigo-light);
+            font-weight: 500;
+        }
+
+        .account-cell {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-cyan);
+        }
+
+        .qty-cell {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .qty-positive {
+            color: var(--accent-emerald);
+        }
+
+        .qty-negative {
+            color: var(--accent-rose);
+        }
+
+        .qty-zero {
+            color: var(--text-muted);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        .empty-state p {
+            font-size: 15px;
+        }
+
+        /* ===== Stats Row ===== */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--gradient-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            border-color: var(--border-glow);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .stat-value.indigo {
+            color: var(--accent-indigo-light);
+        }
+
+        .stat-value.cyan {
+            color: var(--accent-cyan);
+        }
+
+        .stat-value.emerald {
+            color: var(--accent-emerald);
+        }
+
+        .stat-value.amber {
+            color: var(--accent-amber);
+        }
+
+        /* ===== Sample Templates ===== */
+        .templates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .template-card {
+            padding: 16px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .template-card:hover {
+            border-color: var(--accent-indigo);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .template-name {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .template-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* ===== Spinner ===== */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ===== Refresh Button ===== */
+        .refresh-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .refresh-btn:hover {
+            border-color: var(--accent-indigo);
+            color: var(--text-primary);
+        }
+
+        .refresh-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        /* ===== Grid Layout ===== */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .two-col {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ===== Toast ===== */
+        .toast-container {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            padding: 14px 20px;
+            border-radius: var(--radius-md);
+            backdrop-filter: blur(20px);
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: toastIn 0.4s ease-out;
+            min-width: 300px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .toast-success {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--accent-emerald);
+        }
+
+        .toast-error {
+            background: rgba(244, 63, 94, 0.15);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            color: var(--accent-rose);
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* ===== Charts ===== */
+        .chart-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 20px;
+        }
+
+        .chart-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: barGrow 0.8s ease-out;
+        }
+
+        .chart-label {
+            width: 120px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .chart-bar-wrapper {
+            flex: 1;
+            height: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .chart-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-indigo), var(--accent-cyan));
+            border-radius: 6px;
+        }
+
+        @keyframes barGrow {
+            from {
+                width: 0;
+            }
+        }
+
+        .chart-value {
+            width: 80px;
+            font-size: 13px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-primary);
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-effects"></div>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <div class="logo">CS</div>
+                <div>
+                    <div class="header-title">Custody Securities</div>
+                    <div class="header-subtitle">ISO 20022 Settlement Platform</div>
+                </div>
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                System Online
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('dashboard')" id="tab-dashboard">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                </svg>
+                Dashboard
+            </button>
+            <button class="nav-tab" onclick="switchTab('ingest')" id="tab-ingest">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="12" y1="18" x2="12" y2="12" />
+                    <polyline points="9 15 12 12 15 15" />
+                </svg>
+                Settlement
+            </button>
+            <button class="nav-tab" onclick="switchTab('corpactions')" id="tab-corpactions">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                Corp Actions
+            </button>
+            <button class="nav-tab" onclick="switchTab('reports')" id="tab-reports">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                    <polyline points="10 9 9 9 8 9" />
+                </svg>
+                Reporting
+            </button>
+            <button class="nav-tab" onclick="switchTab('positions')" id="tab-positions">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
+                    <path d="M22 12A10 10 0 0 0 12 2v10z" />
+                </svg>
+                Inventory
+            </button>
+            <button class="nav-tab" onclick="switchTab('staticdata')" id="tab-staticdata">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                Static Data
+            </button>
+            <button class="nav-tab" onclick="switchTab('workflows')" id="tab-workflows">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                </svg>
+                Workflows
+            </button>
+        </nav>
+
+        <!-- ===== TAB: DASHBOARD ===== -->
+        <div class="tab-panel active" id="panel-dashboard">
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-label">Total Securities</div>
+                    <div class="stat-value indigo" id="statSecurities">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Accounts</div>
+                    <div class="stat-value cyan" id="statAccounts">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Positions</div>
+                    <div class="stat-value emerald" id="statPositions">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">System Status</div>
+                    <div class="stat-value amber">99.9%</div>
+                </div>
+            </div>
+            <div class="two-col">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">🚀 Recent Activity</div>
+                    </div>
+                    <div class="process-log" id="dashboardLog" style="max-height: 380px;">
+                        <div class="log-entry log-info"><span class="log-msg">Initial synchronization complete.</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">📈 Inventory Summary</div>
+                    </div>
+                    <div id="exposureChart"
+                        style="height: 300px; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
+                        <p>Market exposure chart loading...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== TAB: SETTLEMENT ===== -->
+        <div class="tab-panel" id="panel-ingest">
+            <div class="two-col">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">📥 Ingest ISO 20022 message</div>
+                    </div>
+                    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()"
+                        style="margin-bottom: 20px;">
+                        <div class="upload-icon">📄</div>
+                        <div class="upload-title">Drop XML or Browse</div>
+                        <input type="file" id="fileInput" accept=".xml,.txt" onchange="handleFileUpload(event)"
+                            style="display:none;">
+                    </div>
+                    <div style="padding: 0 20px 20px 20px;">
+                        <div
+                            style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <label class="editor-label">Manual XML Editor</label>
+                            <div style="display:flex; gap:8px;">
+                                <button class="btn btn-secondary" style="padding:4px 8px; font-size:11px;"
+                                    onclick="loadTemplate('receive')">Template: RECE</button>
+                                <button class="btn btn-secondary" style="padding:4px 8px; font-size:11px;"
+                                    onclick="loadTemplate('deliver')">Template: DELI</button>
+                            </div>
+                        </div>
+                        <textarea class="xml-editor" id="xmlEditor" style="min-height: 250px;"
+                            placeholder="Paste ISO 20022 XML here..."></textarea>
+                        <button class="btn btn-primary" id="processBtn"
+                            style="width:100%; margin-top:12px; justify-content:center;" onclick="processMessage()">🚀
+                            Process Message</button>
+
+                        <div class="card-header" style="margin-top: 24px; padding: 0;">
+                            <div class="card-title" style="font-size: 14px;">📋 Processing Log</div>
+                            <button class="btn btn-secondary" style="padding:4px 8px; font-size:11px;"
+                                onclick="clearLog()">Clear</button>
+                        </div>
+                        <div class="process-log" id="processLog">
+                            <div class="log-entry log-info">
+                                <span class="log-icon">ℹ️</span>
+                                <span class="log-time">System</span>
+                                <span class="log-msg">Ready for instruction ingestion.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">📤 Generate Outbound</div>
+                    </div>
+                    <form onsubmit="generateOutbound(event)">
+                        <div style="display:grid; gap:12px;">
+                            <input type="text" id="ob-isin" placeholder="ISIN" required class="xml-editor"
+                                style="min-height:auto;">
+                            <input type="text" id="ob-account" placeholder="Account ID" required class="xml-editor"
+                                style="min-height:auto;">
+                            <input type="number" id="ob-qty" placeholder="Quantity" required class="xml-editor"
+                                style="min-height:auto;">
+                            <select id="ob-movement" class="xml-editor" style="min-height:auto; cursor:pointer;">
+                                <option value="DELI">DELI — Deliver</option>
+                                <option value="RECE">RECE — Receive</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary">⚡ Generate Instruction</button>
+                        </div>
+                    </form>
+                    <textarea class="xml-editor" id="outboundXml" readonly placeholder="Output..."
+                        style="margin-top:20px;"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== TAB: CORP ACTIONS ===== -->
+        <div class="tab-panel" id="panel-corpactions">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">🔔 Corporate Action Events</div>
+                    <button class="btn btn-primary" onclick="announceDemo()">📢 Post Demo Dividend</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Event ID</th>
+                                <th>ISIN</th>
+                                <th>Type</th>
+                                <th>Ex-Date</th>
+                                <th>Status</th>
+                                <th>Operation</th>
+                            </tr>
+                        </thead>
+                        <tbody id="caTableBody">
+                            <tr>
+                                <td colspan="6" class="empty-state">No active events found.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== TAB: REPORTING ===== -->
+        <div class="tab-panel" id="panel-reports">
+            <div class="two-col">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">📊 Generate Reports</div>
+                    </div>
+                    <div style="display:grid; gap:12px;">
+                        <input type="text" id="report-account" placeholder="Account ID" class="xml-editor"
+                            style="min-height:auto;">
+                        <button class="btn btn-primary" onclick="generateReport('HOLDINGS')">📜 Statement of Holdings
+                            (semt.002)</button>
+                        <button class="btn btn-secondary" onclick="generateReport('ACTIVITY')">📋 Transaction Audit
+                            (semt.018)</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">📝 Report Preview</div>
+                    </div>
+                    <textarea class="xml-editor" id="reportOutput" readonly style="min-height: 400px;"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== TAB: INVENTORY ===== -->
+        <div class="tab-panel" id="panel-positions">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">📉 Position Inventory</div>
+                    <button class="refresh-btn" onclick="loadPositions()">Refresh</button>
+                </div>
+                <div class="table-container" id="positionsTable"></div>
+            </div>
+        </div>
+
+        <!-- ===== TAB: STATIC DATA ===== -->
+        <div class="tab-panel" id="panel-staticdata">
+            <div class="two-col">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">🏦 Accounts</div>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Account ID</th>
+                                    <th>Client Name</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="accountsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">💎 Securities Master</div>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ISIN</th>
+                                    <th>Security Name</th>
+                                    <th>Asset Class</th>
+                                </tr>
+                            </thead>
+                            <tbody id="securitiesTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- ===== TAB: WORKFLOWS ===== -->
+                <div class="tab-panel" id="panel-workflows">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">🔄 Instruction Capture Workflow</div>
+                            <div style="display:flex; gap:8px;">
+                                <button class="btn btn-secondary" style="padding:4px 8px; font-size:11px;"
+                                    onclick="createInternalDemo()">➕ New Internal Instruction</button>
+                                <button class="refresh-btn" onclick="loadInstructions()">Refresh</button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Instruction ID</th>
+                                        <th>Source</th>
+                                        <th>ISIN</th>
+                                        <th>Account</th>
+                                        <th>Quantity</th>
+                                        <th>Side</th>
+                                        <th>Status</th>
+                                        <th>Match ID</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="instructionsTableBody">
+                                    <tr>
+                                        <td colspan="8" class="empty-state">No instructions found. Process a SESE.023
+                                            message to start.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                // ===== Constants =====
+                const API_BASE = '/api';
+
+                // ===== Tab Switching =====
+                function switchTab(tab) {
+                    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+
+                    const selectedTab = document.getElementById('tab-' + tab);
+                    const selectedPanel = document.getElementById('panel-' + tab);
+
+                    if (selectedTab) selectedTab.classList.add('active');
+                    if (selectedPanel) selectedPanel.classList.add('active');
+
+                    // Lazy Load Data
+                    if (tab === 'dashboard') loadDashboardData();
+                    if (tab === 'positions') loadPositions();
+                    if (tab === 'corpactions') loadCAEvents();
+                    if (tab === 'staticdata') loadStaticData();
+                    if (tab === 'workflows') loadInstructions();
+                }
+
+                // ===== Dashboard Logic =====
+                async function loadDashboardData() {
+                    try {
+                        const [posRes, secRes, accRes, txRes] = await Promise.all([
+                            fetch(API_BASE + '/positions').then(r => r.json()),
+                            fetch(API_BASE + '/static/securities').then(r => r.json()),
+                            fetch(API_BASE + '/static/accounts').then(r => r.json()),
+                            fetch(API_BASE + '/transactions').then(r => r.json())
+                        ]);
+
+                        document.getElementById('statSecurities').textContent = secRes.length;
+                        document.getElementById('statAccounts').textContent = accRes.length;
+                        document.getElementById('statPositions').textContent = posRes.length;
+
+                        // Render Chart
+                        const chartBox = document.getElementById('exposureChart');
+                        if (posRes.length === 0) {
+                            chartBox.innerHTML = '<div class="empty-state">No inventory data for chart</div>';
+                        } else {
+                            const maxQty = Math.max(...posRes.map(p => parseFloat(p.quantity)));
+                            chartBox.innerHTML = '<div class="chart-container">' + posRes.map(p => `
+                        <div class="chart-row">
+                            <div class="chart-label" title="${p.isin}">${p.isin}</div>
+                            <div class="chart-bar-wrapper">
+                                <div class="chart-bar" style="width: ${(parseFloat(p.quantity) / maxQty * 100)}%"></div>
+                            </div>
+                            <div class="chart-value">${parseFloat(p.quantity).toLocaleString()}</div>
+                        </div>
+                    `).join('') + '</div>';
+                        }
+
+                        const dbLog = document.getElementById('dashboardLog');
+                        dbLog.innerHTML = txRes.slice(-8).reverse().map(tx => `
+                    <div class="log-entry log-info">
+                        <span class="log-time">${new Date(tx.executionTime).toLocaleTimeString()}</span>
+                        <span class="log-msg"><strong>${tx.businessProcess}</strong>: ${tx.movementType} ${tx.quantity} ${tx.isin}</span>
+                    </div>
+                `).join('') || '<div class="empty-state">No recent activity</div>';
+                    } catch (err) { console.error(err); }
+                }
+
+                // ===== Timestamps =====
+                function getTimeStamp() {
+                    return new Date().toLocaleTimeString('en-GB', { hour12: false });
+                }
+
+                // ===== Toast Notifications =====
+                function showToast(message, type = 'success') {
+                    const container = document.getElementById('toastContainer');
+                    const toast = document.createElement('div');
+                    toast.className = 'toast toast-' + type;
+                    toast.innerHTML = (type === 'success' ? '✅' : '❌') + ' ' + message;
+                    container.appendChild(toast);
+                    setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(30px)'; setTimeout(() => toast.remove(), 300); }, 4000);
+                }
+
+                // ===== Static Data =====
+                async function loadStaticData() {
+                    try {
+                        const [secRes, accRes] = await Promise.all([
+                            fetch(API_BASE + '/static/securities').then(r => r.json()),
+                            fetch(API_BASE + '/static/accounts').then(r => r.json())
+                        ]);
+                        document.getElementById('accountsTableBody').innerHTML = accRes.map(a => `
+                    <tr><td>${a.accountId}</td><td>${a.clientName}</td><td>${a.status}</td></tr>
+                `).join('') || '<tr><td colspan="3" class="empty-state">No accounts</td></tr>';
+                        document.getElementById('securitiesTableBody').innerHTML = secRes.map(s => `
+                    <tr><td>${s.isin}</td><td>${s.name}</td><td>${s.assetClass}</td></tr>
+                `).join('') || '<tr><td colspan="3" class="empty-state">No securities</td></tr>';
+                    } catch (err) { console.error(err); }
+                }
+
+                // ===== Corporate Actions =====
+                async function loadCAEvents() {
+                    try {
+                        const res = await fetch(API_BASE + '/corporate-actions');
+                        const events = await res.json();
+                        document.getElementById('caTableBody').innerHTML = events.map(e => `
+                    <tr>
+                        <td>${e.eventId}</td><td>${e.isin}</td><td>${e.eventType}</td><td>${e.exDate || '-'}</td>
+                        <td>${e.status}</td>
+                        <td>${e.status === 'ANNOUNCED' ? `<button onclick="processCA('${e.eventId}', '${e.isin}')" class="btn btn-primary" style="padding:4px 8px; font-size:11px;">Process</button>` : '-'}</td>
+                    </tr>
+                `).join('') || '<tr><td colspan="6" class="empty-state">No events</td></tr>';
+                    } catch (err) { console.error(err); }
+                }
+
+                async function announceDemo() {
+                    await fetch(API_BASE + '/corporate-actions/announce', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ eventId: 'DIV-' + Date.now(), isin: 'US0378331005', eventType: 'BONUS' })
+                    });
+                    loadCAEvents();
+                    showToast("Demo Event Announced");
+                }
+
+                async function processCA(id, isin) {
+                    await fetch(`${API_BASE}/corporate-actions/process/bonus?eventId=${id}&isin=${isin}&ratio=0.1`, { method: 'POST' });
+                    loadCAEvents();
+                    loadDashboardData();
+                    loadPositions();
+                    showToast("Bonus Processed");
+                }
+
+                // ===== File Upload =====
+                const uploadZone = document.getElementById('uploadZone');
+                uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+                uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+                uploadZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadZone.classList.remove('drag-over');
+                    const file = e.dataTransfer.files[0];
+                    if (file) readFile(file);
+                });
+
+                function handleFileUpload(event) {
+                    const file = event.target.files[0];
+                    if (file) readFile(file);
+                }
+
+                function readFile(file) {
+                    addLog('info', `Loading file: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        document.getElementById('xmlEditor').value = e.target.result;
+                        addLog('success', `File loaded successfully: ${file.name}`);
+                        showToast('File loaded: ' + file.name);
+                    };
+                    reader.onerror = () => addLog('error', 'Failed to read file');
+                    reader.readAsText(file);
+                }
+
+                // ===== Templates =====
+                const TEMPLATES = {
+                    receive: `<Document xmlns="urn:iso:std:iso:20022:tech:xsd:sese.023.001.09">
+  <SctiesSttlmTxInstr>
+    <TxId>TX-RECE-001</TxId>
+    <SttlmTpAndAddtlParams>
+      <SctiesMvmntTp>RECE</SctiesMvmntTp>
+      <Pmt>APMT</Pmt>
+    </SttlmTpAndAddtlParams>
+    <FinInstrmId>
+      <ISIN>US0378331005</ISIN>
+    </FinInstrmId>
+    <QtyAndAcctDtls>
+      <SttlmQty>
+        <Qty>
+          <Unit>100</Unit>
+        </Qty>
+      </SttlmQty>
+      <SfkpgAcct>
+        <Id>ACCT_ABC_123</Id>
+      </SfkpgAcct>
+    </QtyAndAcctDtls>
+  </SctiesSttlmTxInstr>
+</Document>`,
+                    deliver: `<Document xmlns="urn:iso:std:iso:20022:tech:xsd:sese.023.001.09">
+  <SctiesSttlmTxInstr>
+    <TxId>TX-DELI-001</TxId>
+    <SttlmTpAndAddtlParams>
+      <SctiesMvmntTp>DELI</SctiesMvmntTp>
+      <Pmt>APMT</Pmt>
+    </SttlmTpAndAddtlParams>
+    <FinInstrmId>
+      <ISIN>US5949181045</ISIN>
+    </FinInstrmId>
+    <QtyAndAcctDtls>
+      <SttlmQty>
+        <Qty>
+          <Unit>50</Unit>
+        </Qty>
+      </SttlmQty>
+      <SfkpgAcct>
+        <Id>ACCT_XYZ_789</Id>
+      </SfkpgAcct>
+    </QtyAndAcctDtls>
+  </SctiesSttlmTxInstr>
+</Document>`
+                };
+
+                function loadTemplate(type) {
+                    document.getElementById('xmlEditor').value = TEMPLATES[type];
+                    addLog('info', `Loaded template: ${type === 'receive' ? 'Receive' : 'Deliver'} Securities`);
+                    showToast('Template loaded');
+                }
+
+                // ===== Process Message =====
+                async function processMessage() {
+                    const xml = document.getElementById('xmlEditor').value.trim();
+                    if (!xml) {
+                        showToast('Please enter or upload XML content first', 'error');
+                        return;
+                    }
+
+                    const btn = document.getElementById('processBtn');
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner"></span> Processing...';
+
+                    addLog('info', 'Sending message to ingestion endpoint...');
+
+                    try {
+                        // Parse XML locally for preview
+                        const parser = new DOMParser();
+                        const xmlDoc = parser.parseFromString(xml, 'text/xml');
+                        const parseError = xmlDoc.querySelector('parsererror');
+                        if (parseError) {
+                            addLog('error', 'XML parsing error — invalid format');
+                            showToast('Invalid XML format', 'error');
+                            return;
+                        }
+
+                        const isin = xmlDoc.querySelector('ISIN')?.textContent || 'Unknown';
+                        const acct = xmlDoc.querySelector('SfkpgAcct Id, Id')?.textContent || 'Unknown';
+                        const qty = xmlDoc.querySelector('Unit')?.textContent || 'Unknown';
+                        const mvmt = xmlDoc.querySelector('SctiesMvmntTp')?.textContent || 'Unknown';
+
+                        addLog('info', `Parsed: ISIN=${isin}, Account=${acct}, Qty=${qty}, Movement=${mvmt}`);
+
+                        const response = await fetch(API_BASE + '/ingest', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/xml' },
+                            body: xml
+                        });
+
+                        const result = await response.text();
+
+                        if (response.ok) {
+                            addLog('success', `✅ ${result}`);
+                            addLog('success', `Position updated: ${acct} / ${isin} — ${mvmt} ${qty} units`);
+                            showToast('Message processed successfully!');
+
+                            // Trigger UI Refresh
+                            loadDashboardData();
+                            loadPositions();
+                        } else {
+                            addLog('error', `Server error: ${result}`);
+                            showToast('Processing failed: ' + result, 'error');
+                        }
+                    } catch (err) {
+                        addLog('error', `Network error: ${err.message}`);
+                        showToast('Connection error', 'error');
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerHTML = '🚀 Process Message';
+                    }
+                }
+
+                // ===== Processing Log =====
+                function addLog(type, message) {
+                    const log = document.getElementById('processLog');
+                    const icons = { info: 'ℹ️', success: '✅', error: '❌', warn: '⚠️' };
+                    const entry = document.createElement('div');
+                    entry.className = 'log-entry log-' + type;
+                    entry.innerHTML = `
+                <span class="log-icon">${icons[type]}</span>
+                <span class="log-time">${getTimeStamp()}</span>
+                <span class="log-msg">${message}</span>
+            `;
+                    log.appendChild(entry);
+                    log.scrollTop = log.scrollHeight;
+                }
+
+                function clearLog() {
+                    document.getElementById('processLog').innerHTML = '';
+                    addLog('info', 'Log cleared. System ready.');
+                }
+
+                function clearEditor() {
+                    document.getElementById('xmlEditor').value = '';
+                }
+
+                // ===== Load Positions =====
+                async function loadPositions() {
+                    try {
+                        // Fetch positions and reference data in parallel
+                        const [posRes, accRes, secRes] = await Promise.all([
+                            fetch(API_BASE + '/positions'),
+                            fetch(API_BASE + '/static/accounts'),
+                            fetch(API_BASE + '/static/securities')
+                        ]);
+
+                        const positions = await posRes.json();
+                        const accounts = await accRes.json();
+                        const securities = await secRes.json();
+
+                        renderPositions(positions, accounts, securities);
+                    } catch (err) {
+                        console.error('Error loading inventory:', err);
+                        document.getElementById('positionsTable').innerHTML =
+                            '<div class="empty-state"><p>Unable to load positions. Is the server running?</p></div>';
+                    }
+                }
+
+                function renderPositions(positions, accounts = [], securities = []) {
+                    // Reference Maps
+                    const accountMap = {};
+                    accounts.forEach(a => accountMap[a.accountId] = a.clientName);
+                    const securityMap = {};
+                    securities.forEach(s => securityMap[s.isin] = s.name);
+
+                    // Stats
+                    const uniqueIsins = new Set(positions.map(p => p.isin));
+                    const uniqueAccounts = new Set(positions.map(p => p.accountId));
+                    const totalQty = positions.reduce((sum, p) => sum + parseFloat(p.quantity || 0), 0);
+
+                    document.getElementById('statSecurities').textContent = uniqueIsins.size;
+                    document.getElementById('statAccounts').textContent = uniqueAccounts.size;
+                    document.getElementById('statPositions').textContent = positions.length;
+                    // Note: Dashboard might use a different statQty ID, usually statPositions handles count.
+
+                    // Table
+                    if (positions.length === 0) {
+                        document.getElementById('positionsTable').innerHTML =
+                            '<div class="empty-state"><p>No positions yet. Ingest a message or announce an event to see positions.</p></div>';
+                        return;
+                    }
+
+                    // Hierarchical Grouping: Account -> ISIN
+                    const hierarchy = {};
+                    positions.forEach(p => {
+                        if (!hierarchy[p.accountId]) hierarchy[p.accountId] = {};
+                        if (!hierarchy[p.accountId][p.isin]) hierarchy[p.accountId][p.isin] = 0;
+                        hierarchy[p.accountId][p.isin] += parseFloat(p.quantity);
+                    });
+
+                    let html = '<div class="custody-statement">';
+
+                    Object.keys(hierarchy).sort().forEach(accId => {
+                        const clientName = accountMap[accId] || 'Unknown Client';
+                        const clientHoldings = hierarchy[accId];
+
+                        html += `
+                    <div class="account-group" style="margin-bottom: 24px;">
+                        <div class="account-header" style="background: rgba(99, 102, 241, 0.1); padding: 12px 20px; border-radius: 8px; border-left: 4px solid var(--accent-indigo); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <span style="font-size: 13px; color: var(--text-muted); text-transform: uppercase; display: block; margin-bottom: 2px;">Account / Client</span>
+                                <span style="font-weight: 700; color: var(--text-primary); font-size: 16px;">${accId} — ${clientName}</span>
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="font-size: 11px; padding: 4px 10px; background: rgba(16, 185, 129, 0.1); color: var(--accent-emerald); border-radius: 20px; font-weight: 600;">ACTIVE SAFE-KEEPING</span>
+                            </div>
+                        </div>
+                        <table style="width: 100%; border-collapse: separate; border-spacing: 0 4px;">
+                            <thead>
+                                <tr style="background: transparent;">
+                                    <th style="padding: 8px 20px; width: 40%">Security</th>
+                                    <th style="padding: 8px 20px; width: 25%">ISIN</th>
+                                    <th style="padding: 8px 20px; width: 20%; text-align: right;">Quantity</th>
+                                    <th style="padding: 8px 20px; width: 15%; text-align: right;">Side</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+
+                        Object.keys(clientHoldings).sort().forEach(isin => {
+                            const qty = clientHoldings[isin];
+                            const secName = securityMap[isin] || 'Private Asset / Generic Security';
+                            const qtyClass = qty > 0 ? 'qty-positive' : qty < 0 ? 'qty-negative' : 'qty-zero';
+                            const side = qty > 0 ? 'LONG' : qty < 0 ? 'SHORT' : 'FLAT';
+
+                            html += `
+                        <tr style="background: rgba(255,255,255,0.02); transition: var(--transition);">
+                            <td style="padding: 12px 20px; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">
+                                <div style="font-weight: 600; color: var(--text-primary);">${secName}</div>
+                            </td>
+                            <td class="isin-cell" style="padding: 12px 20px;">${isin}</td>
+                            <td class="qty-cell ${qtyClass}" style="padding: 12px 20px; text-align: right; font-family: 'JetBrains Mono', monospace;">${qty.toLocaleString()}</td>
+                            <td style="padding: 12px 20px; text-align: right; border-top-right-radius: 8px; border-bottom-right-radius: 8px;">
+                                <span style="font-size: 11px; font-weight: 700; color: ${qty >= 0 ? 'var(--accent-emerald)' : 'var(--accent-rose)'};">${side}</span>
+                            </td>
+                        </tr>`;
+                        });
+
+                        html += `</tbody></table></div>`;
+                    });
+
+                    html += '</div>';
+                    document.getElementById('positionsTable').innerHTML = html;
+                }
+
+                // ===== Instructions & Matching =====
+                async function loadInstructions() {
+                    try {
+                        const res = await fetch(API_BASE + '/instructions');
+                        const instructions = await res.json();
+                        const tbody = document.getElementById('instructionsTableBody');
+
+                        if (instructions.length === 0) {
+                            tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No instructions found.</td></tr>';
+                            return;
+                        }
+
+                        tbody.innerHTML = instructions.map(instr => `
+                    <tr>
+                        <td style="font-family: 'JetBrains Mono', monospace; font-size: 12px;">${instr.instructionId}</td>
+                        <td><span style="font-size: 11px; padding: 2px 6px; border-radius: 4px; background: ${instr.source === 'DEPOSITORY' ? 'rgba(99, 102, 241, 0.1)' : 'rgba(6, 182, 212, 0.1)'}; color: ${instr.source === 'DEPOSITORY' ? 'var(--accent-indigo-light)' : 'var(--accent-cyan)'};">${instr.source}</span></td>
+                        <td class="isin-cell">${instr.isin}</td>
+                        <td class="account-cell">${instr.accountId}</td>
+                        <td class="qty-cell">${instr.quantity}</td>
+                        <td>${instr.movementType}</td>
+                        <td><span style="font-size: 11px; padding: 2px 6px; border-radius: 4px; background: ${getStatusBg(instr.status)}; color: ${getStatusColor(instr.status)};">${instr.status}</span></td>
+                        <td style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted);">${instr.matchingId || '-'}</td>
+                    </tr>
+                `).join('');
+                    } catch (err) { console.error(err); }
+                }
+
+                function getStatusBg(status) {
+                    if (status === 'SETTLED') return 'rgba(16, 185, 129, 0.1)';
+                    if (status === 'REJECTED') return 'rgba(244, 63, 94, 0.1)';
+                    if (status === 'MATCHED') return 'rgba(6, 182, 212, 0.1)';
+                    if (status === 'PENDING_MATCH') return 'rgba(245, 158, 11, 0.1)';
+                    return 'rgba(255, 255, 255, 0.05)';
+                }
+
+                function getStatusColor(status) {
+                    if (status === 'SETTLED') return 'var(--accent-emerald)';
+                    if (status === 'REJECTED') return 'var(--accent-rose)';
+                    if (status === 'MATCHED') return 'var(--accent-cyan)';
+                    if (status === 'PENDING_MATCH') return 'var(--accent-amber)';
+                    return 'var(--text-secondary)';
+                }
+
+                async function createInternalDemo() {
+                    const demoData = {
+                        isin: 'US0378331005',
+                        accountId: 'ACCT_ABC_123',
+                        quantity: 100,
+                        movementType: 'DELI' // Opposite of the 'receive' template
+                    };
+
+                    try {
+                        const response = await fetch(API_BASE + '/instructions/internal', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(demoData)
+                        });
+
+                        if (response.ok) {
+                            showToast('Internal Instruction Created');
+                            loadInstructions();
+                        }
+                    } catch (err) { console.error(err); }
+                }
+
+                // ===== Generate Outbound =====
+                async function generateOutbound(event) {
+                    event.preventDefault();
+                    const isin = document.getElementById('ob-isin').value;
+                    const accountId = document.getElementById('ob-account').value;
+                    const quantity = document.getElementById('ob-qty').value;
+                    const movementType = document.getElementById('ob-movement').value;
+
+                    try {
+                        const params = new URLSearchParams({ isin, accountId, quantity, movementType });
+                        const response = await fetch(API_BASE + '/outbound/generate?' + params.toString(), { method: 'POST' });
+                        const result = await response.text();
+
+                        if (response.ok) {
+                            // Try to format the XML nicely
+                            try {
+                                const parser = new DOMParser();
+                                const xmlDoc = parser.parseFromString(result, 'text/xml');
+                                const serializer = new XMLSerializer();
+                                const formatted = formatXml(serializer.serializeToString(xmlDoc));
+                                document.getElementById('outboundXml').value = formatted;
+                            } catch {
+                                document.getElementById('outboundXml').value = result;
+                            }
+                            showToast('Outbound instruction generated!');
+                        } else {
+                            document.getElementById('outboundXml').value = 'Error: ' + result;
+                            showToast('Generation failed', 'error');
+                        }
+                    } catch (err) {
+                        showToast('Connection error', 'error');
+                    }
+                }
+
+                function formatXml(xml) {
+                    let formatted = '';
+                    let indent = '';
+                    xml.split(/>\s*</).forEach(node => {
+                        if (node.match(/^\/\w/)) indent = indent.substring(2);
+                        formatted += indent + '<' + node + '>\n';
+                        if (node.match(/^<?\w[^>]*[^\/]$/) && !node.startsWith('?')) indent += '  ';
+                    });
+                    return formatted.substring(1, formatted.length - 2);
+                }
+
+                function copyOutbound() {
+                    const xml = document.getElementById('outboundXml').value;
+                    if (!xml) return;
+                    navigator.clipboard.writeText(xml);
+                    showToast('Copied to clipboard!');
+                }
+
+                function downloadOutbound() {
+                    const xml = document.getElementById('outboundXml').value;
+                    if (!xml) return;
+                    const blob = new Blob([xml], { type: 'application/xml' });
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = 'settlement-instruction.xml';
+                    a.click();
+                    showToast('File downloaded!');
+                }
+
+                // ===== Reporting =====
+                async function generateReport(type) {
+                    const acct = document.getElementById('report-account').value || 'ALL';
+                    const output = document.getElementById('reportOutput');
+                    output.value = "Generating report...\n";
+                    try {
+                        if (type === 'HOLDINGS') {
+                            const data = await fetch(API_BASE + '/positions').then(r => r.json());
+                            const filtered = acct === 'ALL' ? data : data.filter(p => p.accountId === acct);
+                            output.value = JSON.stringify(filtered, null, 2);
+                        } else {
+                            const data = await fetch(API_BASE + '/transactions').then(r => r.json());
+                            const filtered = acct === 'ALL' ? data : data.filter(p => p.accountId === acct);
+                            output.value = JSON.stringify(filtered, null, 2);
+                        }
+                        showToast("Report generated!");
+                    } catch (err) { output.value = "Error: " + err.message; }
+                }
+
+                // ===== Init =====
+                document.addEventListener('DOMContentLoaded', () => {
+                    loadDashboardData();
+                });
+            </script>
+</body>
+
+</html>

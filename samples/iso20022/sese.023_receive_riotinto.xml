@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:sese.023.001.09">
+  <SctiesSttlmTxInstr>
+    <TxId>RIO-RECE-123</TxId>
+    <SttlmTpAndAddtlParams>
+      <SctiesMvmntTp>RECE</SctiesMvmntTp>
+      <Pmt>FREE</Pmt>
+    </SttlmTpAndAddtlParams>
+    <FinInstrmId>
+      <ISIN>GB0007188757</ISIN>
+    </FinInstrmId>
+    <QtyAndAcctDtls>
+      <SttlmQty>
+        <Qty>
+          <Unit>250</Unit>
+        </Qty>
+      </SttlmQty>
+      <SfkpgAcct>
+        <Id>ACCT_XYZ_789</Id>
+      </SfkpgAcct>
+    </QtyAndAcctDtls>
+  </SctiesSttlmTxInstr>
+</Document>

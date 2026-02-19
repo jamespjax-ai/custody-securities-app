@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:sese.023.001.09">
+  <SctiesSttlmTxInstr>
+    <TxId>APPL-RECE-001</TxId>
+    <SttlmTpAndAddtlParams>
+      <SctiesMvmntTp>RECE</SctiesMvmntTp>
+      <Pmt>APMT</Pmt>
+    </SttlmTpAndAddtlParams>
+    <FinInstrmId>
+      <ISIN>US0378331005</ISIN>
+    </FinInstrmId>
+    <QtyAndAcctDtls>
+      <SttlmQty>
+        <Qty>
+          <Unit>500</Unit>
+        </Qty>
+      </SttlmQty>
+      <SfkpgAcct>
+        <Id>ACCT_ABC_123</Id>
+      </SfkpgAcct>
+    </QtyAndAcctDtls>
+  </SctiesSttlmTxInstr>
+</Document>
