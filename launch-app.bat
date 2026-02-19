@@ -11,9 +11,12 @@ echo   Custody Securities Starter
 echo ==========================================
 echo.
 
-:: Set environment
-set "JAVA_HOME=C:\tools\java\jdk-17.0.18+8"
-set "JAVA_EXE=%JAVA_HOME%\bin\java.exe"
+:: Set environment - Try to use system JAVA_HOME if not defined
+if "%JAVA_HOME%"=="" (
+    set "JAVA_EXE=java"
+) else (
+    set "JAVA_EXE=%JAVA_HOME%\bin\java.exe"
+)
 set "APP_JAR=target\custody-app-0.0.1-SNAPSHOT.jar"
 
 cd /d "%~dp0"

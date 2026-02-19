@@ -41,8 +41,12 @@ Desktop.ini
 
 ### Logs ###
 *.log
+launcher_debug.log
+app.log
 
-### Temporary files ###
+### Temporary & Local Files ###
 tmp/
-C:\Users\james\.gemini\antigravity\scratch\custody-securities-app\verify_fix.ps1
-C:\Users\james\.gemini\antigravity\scratch\custody-securities-app\CustodySecuritiesApp.zip
+*.ps1
+*.zip
+!launch-app.bat
+!start-custody-app.bat
