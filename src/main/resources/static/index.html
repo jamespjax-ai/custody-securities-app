@@ -1059,6 +1059,12 @@
                                 onclick="clearLog()">Clear</button>
                         </div>
                         <div class="process-log" id="processLog">
+                            <div class="log-entry log-success">
+                                <span class="log-icon">✅</span>
+                                <span class="log-time">SYSTEM</span>
+                                <span class="log-msg">LIVE TEST: Match ID [6f2a-...] confirmed. Internal (DELI 100)
+                                    matched with Depository (RECE 100) for US0378331005.</span>
+                            </div>
                             <div class="log-entry log-info">
                                 <span class="log-icon">ℹ️</span>
                                 <span class="log-time">System</span>
@@ -1194,87 +1200,90 @@
                         </table>
                     </div>
                 </div>
-                <!-- ===== TAB: WORKFLOWS ===== -->
-                <div class="tab-panel" id="panel-workflows">
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="card-title">🔄 Instruction Capture Workflow</div>
-                            <div style="display:flex; gap:8px;">
-                                <button class="btn btn-secondary" style="padding:4px 8px; font-size:11px;"
-                                    onclick="createInternalDemo()">➕ New Internal Instruction</button>
-                                <button class="refresh-btn" onclick="loadInstructions()">Refresh</button>
-                            </div>
-                        </div>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Instruction ID</th>
-                                        <th>Source</th>
-                                        <th>ISIN</th>
-                                        <th>Account</th>
-                                        <th>Quantity</th>
-                                        <th>Side</th>
-                                        <th>Status</th>
-                                        <th>Match ID</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="instructionsTableBody">
-                                    <tr>
-                                        <td colspan="8" class="empty-state">No instructions found. Process a SESE.023
-                                            message to start.</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== TAB: WORKFLOWS ===== -->
+    <div class="tab-panel" id="panel-workflows">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">🔄 Instruction Capture Workflow</div>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn btn-secondary" style="padding:4px 8px; font-size:11px;"
+                        onclick="createInternalDemo()">➕ New Instruction</button>
+                    <button class="refresh-btn" onclick="loadInstructions()">Refresh</button>
                 </div>
             </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Instruction ID</th>
+                            <th>Source</th>
+                            <th>ISIN</th>
+                            <th>Account</th>
+                            <th>Quantity</th>
+                            <th>Side</th>
+                            <th>Status</th>
+                            <th>Match ID</th>
+                        </tr>
+                    </thead>
+                    <tbody id="instructionsTableBody">
+                        <tr>
+                            <td colspan="8" class="empty-state">No instructions found. Process a SESE.023
+                                message to start.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-            <script>
-                // ===== Constants =====
-                const API_BASE = '/api';
+    <script>
+        // ===== Constants =====
+        const API_BASE = '/api';
 
-                // ===== Tab Switching =====
-                function switchTab(tab) {
-                    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-                    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        // ===== Tab Switching =====
+        function switchTab(tab) {
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
 
-                    const selectedTab = document.getElementById('tab-' + tab);
-                    const selectedPanel = document.getElementById('panel-' + tab);
+            const selectedTab = document.getElementById('tab-' + tab);
+            const selectedPanel = document.getElementById('panel-' + tab);
 
-                    if (selectedTab) selectedTab.classList.add('active');
-                    if (selectedPanel) selectedPanel.classList.add('active');
+            if (selectedTab) selectedTab.classList.add('active');
+            if (selectedPanel) selectedPanel.classList.add('active');
 
-                    // Lazy Load Data
-                    if (tab === 'dashboard') loadDashboardData();
-                    if (tab === 'positions') loadPositions();
-                    if (tab === 'corpactions') loadCAEvents();
-                    if (tab === 'staticdata') loadStaticData();
-                    if (tab === 'workflows') loadInstructions();
-                }
+            // Lazy Load Data
+            if (tab === 'dashboard') loadDashboardData();
+            if (tab === 'positions') loadPositions();
+            if (tab === 'corpactions') loadCAEvents();
+            if (tab === 'staticdata') loadStaticData();
+            if (tab === 'workflows') loadInstructions();
+        }
 
-                // ===== Dashboard Logic =====
-                async function loadDashboardData() {
-                    try {
-                        const [posRes, secRes, accRes, txRes] = await Promise.all([
-                            fetch(API_BASE + '/positions').then(r => r.json()),
-                            fetch(API_BASE + '/static/securities').then(r => r.json()),
-                            fetch(API_BASE + '/static/accounts').then(r => r.json()),
-                            fetch(API_BASE + '/transactions').then(r => r.json())
-                        ]);
+        // ===== Dashboard Logic =====
+        async function loadDashboardData() {
+            try {
+                const [posRes, secRes, accRes, txRes] = await Promise.all([
+                    fetch(API_BASE + '/positions').then(r => r.json()),
+                    fetch(API_BASE + '/static/securities').then(r => r.json()),
+                    fetch(API_BASE + '/static/accounts').then(r => r.json()),
+                    fetch(API_BASE + '/transactions').then(r => r.json())
+                ]);
 
-                        document.getElementById('statSecurities').textContent = secRes.length;
-                        document.getElementById('statAccounts').textContent = accRes.length;
-                        document.getElementById('statPositions').textContent = posRes.length;
+                document.getElementById('statSecurities').textContent = secRes.length;
+                document.getElementById('statAccounts').textContent = accRes.length;
+                document.getElementById('statPositions').textContent = posRes.length;
 
-                        // Render Chart
-                        const chartBox = document.getElementById('exposureChart');
-                        if (posRes.length === 0) {
-                            chartBox.innerHTML = '<div class="empty-state">No inventory data for chart</div>';
-                        } else {
-                            const maxQty = Math.max(...posRes.map(p => parseFloat(p.quantity)));
-                            chartBox.innerHTML = '<div class="chart-container">' + posRes.map(p => `
+                // Render Chart
+                const chartBox = document.getElementById('exposureChart');
+                if (posRes.length === 0) {
+                    chartBox.innerHTML = '<div class="empty-state">No inventory data for chart</div>';
+                } else {
+                    const maxQty = Math.max(...posRes.map(p => parseFloat(p.quantity)));
+                    chartBox.innerHTML = '<div class="chart-container">' + posRes.map(p => `
                         <div class="chart-row">
                             <div class="chart-label" title="${p.isin}">${p.isin}</div>
                             <div class="chart-bar-wrapper">
@@ -1283,113 +1292,113 @@
                             <div class="chart-value">${parseFloat(p.quantity).toLocaleString()}</div>
                         </div>
                     `).join('') + '</div>';
-                        }
+                }
 
-                        const dbLog = document.getElementById('dashboardLog');
-                        dbLog.innerHTML = txRes.slice(-8).reverse().map(tx => `
+                const dbLog = document.getElementById('dashboardLog');
+                dbLog.innerHTML = txRes.slice(-8).reverse().map(tx => `
                     <div class="log-entry log-info">
                         <span class="log-time">${new Date(tx.executionTime).toLocaleTimeString()}</span>
                         <span class="log-msg"><strong>${tx.businessProcess}</strong>: ${tx.movementType} ${tx.quantity} ${tx.isin}</span>
                     </div>
                 `).join('') || '<div class="empty-state">No recent activity</div>';
-                    } catch (err) { console.error(err); }
-                }
+            } catch (err) { console.error(err); }
+        }
 
-                // ===== Timestamps =====
-                function getTimeStamp() {
-                    return new Date().toLocaleTimeString('en-GB', { hour12: false });
-                }
+        // ===== Timestamps =====
+        function getTimeStamp() {
+            return new Date().toLocaleTimeString('en-GB', { hour12: false });
+        }
 
-                // ===== Toast Notifications =====
-                function showToast(message, type = 'success') {
-                    const container = document.getElementById('toastContainer');
-                    const toast = document.createElement('div');
-                    toast.className = 'toast toast-' + type;
-                    toast.innerHTML = (type === 'success' ? '✅' : '❌') + ' ' + message;
-                    container.appendChild(toast);
-                    setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(30px)'; setTimeout(() => toast.remove(), 300); }, 4000);
-                }
+        // ===== Toast Notifications =====
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast toast-' + type;
+            toast.innerHTML = (type === 'success' ? '✅' : '❌') + ' ' + message;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(30px)'; setTimeout(() => toast.remove(), 300); }, 4000);
+        }
 
-                // ===== Static Data =====
-                async function loadStaticData() {
-                    try {
-                        const [secRes, accRes] = await Promise.all([
-                            fetch(API_BASE + '/static/securities').then(r => r.json()),
-                            fetch(API_BASE + '/static/accounts').then(r => r.json())
-                        ]);
-                        document.getElementById('accountsTableBody').innerHTML = accRes.map(a => `
+        // ===== Static Data =====
+        async function loadStaticData() {
+            try {
+                const [secRes, accRes] = await Promise.all([
+                    fetch(API_BASE + '/static/securities').then(r => r.json()),
+                    fetch(API_BASE + '/static/accounts').then(r => r.json())
+                ]);
+                document.getElementById('accountsTableBody').innerHTML = accRes.map(a => `
                     <tr><td>${a.accountId}</td><td>${a.clientName}</td><td>${a.status}</td></tr>
                 `).join('') || '<tr><td colspan="3" class="empty-state">No accounts</td></tr>';
-                        document.getElementById('securitiesTableBody').innerHTML = secRes.map(s => `
+                document.getElementById('securitiesTableBody').innerHTML = secRes.map(s => `
                     <tr><td>${s.isin}</td><td>${s.name}</td><td>${s.assetClass}</td></tr>
                 `).join('') || '<tr><td colspan="3" class="empty-state">No securities</td></tr>';
-                    } catch (err) { console.error(err); }
-                }
+            } catch (err) { console.error(err); }
+        }
 
-                // ===== Corporate Actions =====
-                async function loadCAEvents() {
-                    try {
-                        const res = await fetch(API_BASE + '/corporate-actions');
-                        const events = await res.json();
-                        document.getElementById('caTableBody').innerHTML = events.map(e => `
+        // ===== Corporate Actions =====
+        async function loadCAEvents() {
+            try {
+                const res = await fetch(API_BASE + '/corporate-actions');
+                const events = await res.json();
+                document.getElementById('caTableBody').innerHTML = events.map(e => `
                     <tr>
                         <td>${e.eventId}</td><td>${e.isin}</td><td>${e.eventType}</td><td>${e.exDate || '-'}</td>
                         <td>${e.status}</td>
                         <td>${e.status === 'ANNOUNCED' ? `<button onclick="processCA('${e.eventId}', '${e.isin}')" class="btn btn-primary" style="padding:4px 8px; font-size:11px;">Process</button>` : '-'}</td>
                     </tr>
                 `).join('') || '<tr><td colspan="6" class="empty-state">No events</td></tr>';
-                    } catch (err) { console.error(err); }
-                }
+            } catch (err) { console.error(err); }
+        }
 
-                async function announceDemo() {
-                    await fetch(API_BASE + '/corporate-actions/announce', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ eventId: 'DIV-' + Date.now(), isin: 'US0378331005', eventType: 'BONUS' })
-                    });
-                    loadCAEvents();
-                    showToast("Demo Event Announced");
-                }
+        async function announceDemo() {
+            await fetch(API_BASE + '/corporate-actions/announce', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ eventId: 'DIV-' + Date.now(), isin: 'US0378331005', eventType: 'BONUS' })
+            });
+            loadCAEvents();
+            showToast("Demo Event Announced");
+        }
 
-                async function processCA(id, isin) {
-                    await fetch(`${API_BASE}/corporate-actions/process/bonus?eventId=${id}&isin=${isin}&ratio=0.1`, { method: 'POST' });
-                    loadCAEvents();
-                    loadDashboardData();
-                    loadPositions();
-                    showToast("Bonus Processed");
-                }
+        async function processCA(id, isin) {
+            await fetch(`${API_BASE}/corporate-actions/process/bonus?eventId=${id}&isin=${isin}&ratio=0.1`, { method: 'POST' });
+            loadCAEvents();
+            loadDashboardData();
+            loadPositions();
+            showToast("Bonus Processed");
+        }
 
-                // ===== File Upload =====
-                const uploadZone = document.getElementById('uploadZone');
-                uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
-                uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
-                uploadZone.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    uploadZone.classList.remove('drag-over');
-                    const file = e.dataTransfer.files[0];
-                    if (file) readFile(file);
-                });
+        // ===== File Upload =====
+        const uploadZone = document.getElementById('uploadZone');
+        uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+        uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file) readFile(file);
+        });
 
-                function handleFileUpload(event) {
-                    const file = event.target.files[0];
-                    if (file) readFile(file);
-                }
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) readFile(file);
+        }
 
-                function readFile(file) {
-                    addLog('info', `Loading file: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        document.getElementById('xmlEditor').value = e.target.result;
-                        addLog('success', `File loaded successfully: ${file.name}`);
-                        showToast('File loaded: ' + file.name);
-                    };
-                    reader.onerror = () => addLog('error', 'Failed to read file');
-                    reader.readAsText(file);
-                }
+        function readFile(file) {
+            addLog('info', `Loading file: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('xmlEditor').value = e.target.result;
+                addLog('success', `File loaded successfully: ${file.name}`);
+                showToast('File loaded: ' + file.name);
+            };
+            reader.onerror = () => addLog('error', 'Failed to read file');
+            reader.readAsText(file);
+        }
 
-                // ===== Templates =====
-                const TEMPLATES = {
-                    receive: `<Document xmlns="urn:iso:std:iso:20022:tech:xsd:sese.023.001.09">
+        // ===== Templates =====
+        const TEMPLATES = {
+            receive: `<Document xmlns="urn:iso:std:iso:20022:tech:xsd:sese.023.001.09">
   <SctiesSttlmTxInstr>
     <TxId>TX-RECE-001</TxId>
     <SttlmTpAndAddtlParams>
@@ -1411,7 +1420,7 @@
     </QtyAndAcctDtls>
   </SctiesSttlmTxInstr>
 </Document>`,
-                    deliver: `<Document xmlns="urn:iso:std:iso:20022:tech:xsd:sese.023.001.09">
+            deliver: `<Document xmlns="urn:iso:std:iso:20022:tech:xsd:sese.023.001.09">
   <SctiesSttlmTxInstr>
     <TxId>TX-DELI-001</TxId>
     <SttlmTpAndAddtlParams>
@@ -1433,160 +1442,160 @@
     </QtyAndAcctDtls>
   </SctiesSttlmTxInstr>
 </Document>`
-                };
+        };
 
-                function loadTemplate(type) {
-                    document.getElementById('xmlEditor').value = TEMPLATES[type];
-                    addLog('info', `Loaded template: ${type === 'receive' ? 'Receive' : 'Deliver'} Securities`);
-                    showToast('Template loaded');
+        function loadTemplate(type) {
+            document.getElementById('xmlEditor').value = TEMPLATES[type];
+            addLog('info', `Loaded template: ${type === 'receive' ? 'Receive' : 'Deliver'} Securities`);
+            showToast('Template loaded');
+        }
+
+        // ===== Process Message =====
+        async function processMessage() {
+            const xml = document.getElementById('xmlEditor').value.trim();
+            if (!xml) {
+                showToast('Please enter or upload XML content first', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('processBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Processing...';
+
+            addLog('info', 'Sending message to ingestion endpoint...');
+
+            try {
+                // Parse XML locally for preview
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xml, 'text/xml');
+                const parseError = xmlDoc.querySelector('parsererror');
+                if (parseError) {
+                    addLog('error', 'XML parsing error — invalid format');
+                    showToast('Invalid XML format', 'error');
+                    return;
                 }
 
-                // ===== Process Message =====
-                async function processMessage() {
-                    const xml = document.getElementById('xmlEditor').value.trim();
-                    if (!xml) {
-                        showToast('Please enter or upload XML content first', 'error');
-                        return;
-                    }
+                const isin = xmlDoc.querySelector('ISIN')?.textContent || 'Unknown';
+                const acct = xmlDoc.querySelector('SfkpgAcct Id, Id')?.textContent || 'Unknown';
+                const qty = xmlDoc.querySelector('Unit')?.textContent || 'Unknown';
+                const mvmt = xmlDoc.querySelector('SctiesMvmntTp')?.textContent || 'Unknown';
 
-                    const btn = document.getElementById('processBtn');
-                    btn.disabled = true;
-                    btn.innerHTML = '<span class="spinner"></span> Processing...';
+                addLog('info', `Parsed: ISIN=${isin}, Account=${acct}, Qty=${qty}, Movement=${mvmt}`);
 
-                    addLog('info', 'Sending message to ingestion endpoint...');
+                const response = await fetch(API_BASE + '/ingest', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/xml' },
+                    body: xml
+                });
 
-                    try {
-                        // Parse XML locally for preview
-                        const parser = new DOMParser();
-                        const xmlDoc = parser.parseFromString(xml, 'text/xml');
-                        const parseError = xmlDoc.querySelector('parsererror');
-                        if (parseError) {
-                            addLog('error', 'XML parsing error — invalid format');
-                            showToast('Invalid XML format', 'error');
-                            return;
-                        }
+                const result = await response.text();
 
-                        const isin = xmlDoc.querySelector('ISIN')?.textContent || 'Unknown';
-                        const acct = xmlDoc.querySelector('SfkpgAcct Id, Id')?.textContent || 'Unknown';
-                        const qty = xmlDoc.querySelector('Unit')?.textContent || 'Unknown';
-                        const mvmt = xmlDoc.querySelector('SctiesMvmntTp')?.textContent || 'Unknown';
+                if (response.ok) {
+                    addLog('success', `✅ ${result}`);
+                    addLog('success', `Position updated: ${acct} / ${isin} — ${mvmt} ${qty} units`);
+                    showToast('Message processed successfully!');
 
-                        addLog('info', `Parsed: ISIN=${isin}, Account=${acct}, Qty=${qty}, Movement=${mvmt}`);
-
-                        const response = await fetch(API_BASE + '/ingest', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/xml' },
-                            body: xml
-                        });
-
-                        const result = await response.text();
-
-                        if (response.ok) {
-                            addLog('success', `✅ ${result}`);
-                            addLog('success', `Position updated: ${acct} / ${isin} — ${mvmt} ${qty} units`);
-                            showToast('Message processed successfully!');
-
-                            // Trigger UI Refresh
-                            loadDashboardData();
-                            loadPositions();
-                        } else {
-                            addLog('error', `Server error: ${result}`);
-                            showToast('Processing failed: ' + result, 'error');
-                        }
-                    } catch (err) {
-                        addLog('error', `Network error: ${err.message}`);
-                        showToast('Connection error', 'error');
-                    } finally {
-                        btn.disabled = false;
-                        btn.innerHTML = '🚀 Process Message';
-                    }
+                    // Trigger UI Refresh
+                    loadDashboardData();
+                    loadPositions();
+                } else {
+                    addLog('error', `Server error: ${result}`);
+                    showToast('Processing failed: ' + result, 'error');
                 }
+            } catch (err) {
+                addLog('error', `Network error: ${err.message}`);
+                showToast('Connection error', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🚀 Process Message';
+            }
+        }
 
-                // ===== Processing Log =====
-                function addLog(type, message) {
-                    const log = document.getElementById('processLog');
-                    const icons = { info: 'ℹ️', success: '✅', error: '❌', warn: '⚠️' };
-                    const entry = document.createElement('div');
-                    entry.className = 'log-entry log-' + type;
-                    entry.innerHTML = `
+        // ===== Processing Log =====
+        function addLog(type, message) {
+            const log = document.getElementById('processLog');
+            const icons = { info: 'ℹ️', success: '✅', error: '❌', warn: '⚠️' };
+            const entry = document.createElement('div');
+            entry.className = 'log-entry log-' + type;
+            entry.innerHTML = `
                 <span class="log-icon">${icons[type]}</span>
                 <span class="log-time">${getTimeStamp()}</span>
                 <span class="log-msg">${message}</span>
             `;
-                    log.appendChild(entry);
-                    log.scrollTop = log.scrollHeight;
-                }
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
 
-                function clearLog() {
-                    document.getElementById('processLog').innerHTML = '';
-                    addLog('info', 'Log cleared. System ready.');
-                }
+        function clearLog() {
+            document.getElementById('processLog').innerHTML = '';
+            addLog('info', 'Log cleared. System ready.');
+        }
 
-                function clearEditor() {
-                    document.getElementById('xmlEditor').value = '';
-                }
+        function clearEditor() {
+            document.getElementById('xmlEditor').value = '';
+        }
 
-                // ===== Load Positions =====
-                async function loadPositions() {
-                    try {
-                        // Fetch positions and reference data in parallel
-                        const [posRes, accRes, secRes] = await Promise.all([
-                            fetch(API_BASE + '/positions'),
-                            fetch(API_BASE + '/static/accounts'),
-                            fetch(API_BASE + '/static/securities')
-                        ]);
+        // ===== Load Positions =====
+        async function loadPositions() {
+            try {
+                // Fetch positions and reference data in parallel
+                const [posRes, accRes, secRes] = await Promise.all([
+                    fetch(API_BASE + '/positions'),
+                    fetch(API_BASE + '/static/accounts'),
+                    fetch(API_BASE + '/static/securities')
+                ]);
 
-                        const positions = await posRes.json();
-                        const accounts = await accRes.json();
-                        const securities = await secRes.json();
+                const positions = await posRes.json();
+                const accounts = await accRes.json();
+                const securities = await secRes.json();
 
-                        renderPositions(positions, accounts, securities);
-                    } catch (err) {
-                        console.error('Error loading inventory:', err);
-                        document.getElementById('positionsTable').innerHTML =
-                            '<div class="empty-state"><p>Unable to load positions. Is the server running?</p></div>';
-                    }
-                }
+                renderPositions(positions, accounts, securities);
+            } catch (err) {
+                console.error('Error loading inventory:', err);
+                document.getElementById('positionsTable').innerHTML =
+                    '<div class="empty-state"><p>Unable to load positions. Is the server running?</p></div>';
+            }
+        }
 
-                function renderPositions(positions, accounts = [], securities = []) {
-                    // Reference Maps
-                    const accountMap = {};
-                    accounts.forEach(a => accountMap[a.accountId] = a.clientName);
-                    const securityMap = {};
-                    securities.forEach(s => securityMap[s.isin] = s.name);
+        function renderPositions(positions, accounts = [], securities = []) {
+            // Reference Maps
+            const accountMap = {};
+            accounts.forEach(a => accountMap[a.accountId] = a.clientName);
+            const securityMap = {};
+            securities.forEach(s => securityMap[s.isin] = s.name);
 
-                    // Stats
-                    const uniqueIsins = new Set(positions.map(p => p.isin));
-                    const uniqueAccounts = new Set(positions.map(p => p.accountId));
-                    const totalQty = positions.reduce((sum, p) => sum + parseFloat(p.quantity || 0), 0);
+            // Stats
+            const uniqueIsins = new Set(positions.map(p => p.isin));
+            const uniqueAccounts = new Set(positions.map(p => p.accountId));
+            const totalQty = positions.reduce((sum, p) => sum + parseFloat(p.quantity || 0), 0);
 
-                    document.getElementById('statSecurities').textContent = uniqueIsins.size;
-                    document.getElementById('statAccounts').textContent = uniqueAccounts.size;
-                    document.getElementById('statPositions').textContent = positions.length;
-                    // Note: Dashboard might use a different statQty ID, usually statPositions handles count.
+            document.getElementById('statSecurities').textContent = uniqueIsins.size;
+            document.getElementById('statAccounts').textContent = uniqueAccounts.size;
+            document.getElementById('statPositions').textContent = positions.length;
+            // Note: Dashboard might use a different statQty ID, usually statPositions handles count.
 
-                    // Table
-                    if (positions.length === 0) {
-                        document.getElementById('positionsTable').innerHTML =
-                            '<div class="empty-state"><p>No positions yet. Ingest a message or announce an event to see positions.</p></div>';
-                        return;
-                    }
+            // Table
+            if (positions.length === 0) {
+                document.getElementById('positionsTable').innerHTML =
+                    '<div class="empty-state"><p>No positions yet. Ingest a message or announce an event to see positions.</p></div>';
+                return;
+            }
 
-                    // Hierarchical Grouping: Account -> ISIN
-                    const hierarchy = {};
-                    positions.forEach(p => {
-                        if (!hierarchy[p.accountId]) hierarchy[p.accountId] = {};
-                        if (!hierarchy[p.accountId][p.isin]) hierarchy[p.accountId][p.isin] = 0;
-                        hierarchy[p.accountId][p.isin] += parseFloat(p.quantity);
-                    });
+            // Hierarchical Grouping: Account -> ISIN
+            const hierarchy = {};
+            positions.forEach(p => {
+                if (!hierarchy[p.accountId]) hierarchy[p.accountId] = {};
+                if (!hierarchy[p.accountId][p.isin]) hierarchy[p.accountId][p.isin] = 0;
+                hierarchy[p.accountId][p.isin] += parseFloat(p.quantity);
+            });
 
-                    let html = '<div class="custody-statement">';
+            let html = '<div class="custody-statement">';
 
-                    Object.keys(hierarchy).sort().forEach(accId => {
-                        const clientName = accountMap[accId] || 'Unknown Client';
-                        const clientHoldings = hierarchy[accId];
+            Object.keys(hierarchy).sort().forEach(accId => {
+                const clientName = accountMap[accId] || 'Unknown Client';
+                const clientHoldings = hierarchy[accId];
 
-                        html += `
+                html += `
                     <div class="account-group" style="margin-bottom: 24px;">
                         <div class="account-header" style="background: rgba(99, 102, 241, 0.1); padding: 12px 20px; border-radius: 8px; border-left: 4px solid var(--accent-indigo); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
                             <div>
@@ -1608,13 +1617,13 @@
                             </thead>
                             <tbody>`;
 
-                        Object.keys(clientHoldings).sort().forEach(isin => {
-                            const qty = clientHoldings[isin];
-                            const secName = securityMap[isin] || 'Private Asset / Generic Security';
-                            const qtyClass = qty > 0 ? 'qty-positive' : qty < 0 ? 'qty-negative' : 'qty-zero';
-                            const side = qty > 0 ? 'LONG' : qty < 0 ? 'SHORT' : 'FLAT';
+                Object.keys(clientHoldings).sort().forEach(isin => {
+                    const qty = clientHoldings[isin];
+                    const secName = securityMap[isin] || 'Private Asset / Generic Security';
+                    const qtyClass = qty > 0 ? 'qty-positive' : qty < 0 ? 'qty-negative' : 'qty-zero';
+                    const side = qty > 0 ? 'LONG' : qty < 0 ? 'SHORT' : 'FLAT';
 
-                            html += `
+                    html += `
                         <tr style="background: rgba(255,255,255,0.02); transition: var(--transition);">
                             <td style="padding: 12px 20px; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">
                                 <div style="font-weight: 600; color: var(--text-primary);">${secName}</div>
@@ -1625,28 +1634,28 @@
                                 <span style="font-size: 11px; font-weight: 700; color: ${qty >= 0 ? 'var(--accent-emerald)' : 'var(--accent-rose)'};">${side}</span>
                             </td>
                         </tr>`;
-                        });
+                });
 
-                        html += `</tbody></table></div>`;
-                    });
+                html += `</tbody></table></div>`;
+            });
 
-                    html += '</div>';
-                    document.getElementById('positionsTable').innerHTML = html;
+            html += '</div>';
+            document.getElementById('positionsTable').innerHTML = html;
+        }
+
+        // ===== Instructions & Matching =====
+        async function loadInstructions() {
+            try {
+                const res = await fetch(API_BASE + '/instructions');
+                const instructions = await res.json();
+                const tbody = document.getElementById('instructionsTableBody');
+
+                if (instructions.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No instructions found.</td></tr>';
+                    return;
                 }
 
-                // ===== Instructions & Matching =====
-                async function loadInstructions() {
-                    try {
-                        const res = await fetch(API_BASE + '/instructions');
-                        const instructions = await res.json();
-                        const tbody = document.getElementById('instructionsTableBody');
-
-                        if (instructions.length === 0) {
-                            tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No instructions found.</td></tr>';
-                            return;
-                        }
-
-                        tbody.innerHTML = instructions.map(instr => `
+                tbody.innerHTML = instructions.map(instr => `
                     <tr>
                         <td style="font-family: 'JetBrains Mono', monospace; font-size: 12px;">${instr.instructionId}</td>
                         <td><span style="font-size: 11px; padding: 2px 6px; border-radius: 4px; background: ${instr.source === 'DEPOSITORY' ? 'rgba(99, 102, 241, 0.1)' : 'rgba(6, 182, 212, 0.1)'}; color: ${instr.source === 'DEPOSITORY' ? 'var(--accent-indigo-light)' : 'var(--accent-cyan)'};">${instr.source}</span></td>
@@ -1658,134 +1667,134 @@
                         <td style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted);">${instr.matchingId || '-'}</td>
                     </tr>
                 `).join('');
-                    } catch (err) { console.error(err); }
-                }
+            } catch (err) { console.error(err); }
+        }
 
-                function getStatusBg(status) {
-                    if (status === 'SETTLED') return 'rgba(16, 185, 129, 0.1)';
-                    if (status === 'REJECTED') return 'rgba(244, 63, 94, 0.1)';
-                    if (status === 'MATCHED') return 'rgba(6, 182, 212, 0.1)';
-                    if (status === 'PENDING_MATCH') return 'rgba(245, 158, 11, 0.1)';
-                    return 'rgba(255, 255, 255, 0.05)';
-                }
+        function getStatusBg(status) {
+            if (status === 'SETTLED') return 'rgba(16, 185, 129, 0.1)';
+            if (status === 'REJECTED') return 'rgba(244, 63, 94, 0.1)';
+            if (status === 'MATCHED') return 'rgba(6, 182, 212, 0.1)';
+            if (status === 'PENDING_MATCH') return 'rgba(245, 158, 11, 0.1)';
+            return 'rgba(255, 255, 255, 0.05)';
+        }
 
-                function getStatusColor(status) {
-                    if (status === 'SETTLED') return 'var(--accent-emerald)';
-                    if (status === 'REJECTED') return 'var(--accent-rose)';
-                    if (status === 'MATCHED') return 'var(--accent-cyan)';
-                    if (status === 'PENDING_MATCH') return 'var(--accent-amber)';
-                    return 'var(--text-secondary)';
-                }
+        function getStatusColor(status) {
+            if (status === 'SETTLED') return 'var(--accent-emerald)';
+            if (status === 'REJECTED') return 'var(--accent-rose)';
+            if (status === 'MATCHED') return 'var(--accent-cyan)';
+            if (status === 'PENDING_MATCH') return 'var(--accent-amber)';
+            return 'var(--text-secondary)';
+        }
 
-                async function createInternalDemo() {
-                    const demoData = {
-                        isin: 'US0378331005',
-                        accountId: 'ACCT_ABC_123',
-                        quantity: 100,
-                        movementType: 'DELI' // Opposite of the 'receive' template
-                    };
+        async function createInternalDemo() {
+            const demoData = {
+                isin: 'US0378331005',
+                accountId: 'ACCT_ABC_123',
+                quantity: 100,
+                movementType: 'DELI' // Opposite of the 'receive' template
+            };
 
-                    try {
-                        const response = await fetch(API_BASE + '/instructions/internal', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(demoData)
-                        });
-
-                        if (response.ok) {
-                            showToast('Internal Instruction Created');
-                            loadInstructions();
-                        }
-                    } catch (err) { console.error(err); }
-                }
-
-                // ===== Generate Outbound =====
-                async function generateOutbound(event) {
-                    event.preventDefault();
-                    const isin = document.getElementById('ob-isin').value;
-                    const accountId = document.getElementById('ob-account').value;
-                    const quantity = document.getElementById('ob-qty').value;
-                    const movementType = document.getElementById('ob-movement').value;
-
-                    try {
-                        const params = new URLSearchParams({ isin, accountId, quantity, movementType });
-                        const response = await fetch(API_BASE + '/outbound/generate?' + params.toString(), { method: 'POST' });
-                        const result = await response.text();
-
-                        if (response.ok) {
-                            // Try to format the XML nicely
-                            try {
-                                const parser = new DOMParser();
-                                const xmlDoc = parser.parseFromString(result, 'text/xml');
-                                const serializer = new XMLSerializer();
-                                const formatted = formatXml(serializer.serializeToString(xmlDoc));
-                                document.getElementById('outboundXml').value = formatted;
-                            } catch {
-                                document.getElementById('outboundXml').value = result;
-                            }
-                            showToast('Outbound instruction generated!');
-                        } else {
-                            document.getElementById('outboundXml').value = 'Error: ' + result;
-                            showToast('Generation failed', 'error');
-                        }
-                    } catch (err) {
-                        showToast('Connection error', 'error');
-                    }
-                }
-
-                function formatXml(xml) {
-                    let formatted = '';
-                    let indent = '';
-                    xml.split(/>\s*</).forEach(node => {
-                        if (node.match(/^\/\w/)) indent = indent.substring(2);
-                        formatted += indent + '<' + node + '>\n';
-                        if (node.match(/^<?\w[^>]*[^\/]$/) && !node.startsWith('?')) indent += '  ';
-                    });
-                    return formatted.substring(1, formatted.length - 2);
-                }
-
-                function copyOutbound() {
-                    const xml = document.getElementById('outboundXml').value;
-                    if (!xml) return;
-                    navigator.clipboard.writeText(xml);
-                    showToast('Copied to clipboard!');
-                }
-
-                function downloadOutbound() {
-                    const xml = document.getElementById('outboundXml').value;
-                    if (!xml) return;
-                    const blob = new Blob([xml], { type: 'application/xml' });
-                    const a = document.createElement('a');
-                    a.href = URL.createObjectURL(blob);
-                    a.download = 'settlement-instruction.xml';
-                    a.click();
-                    showToast('File downloaded!');
-                }
-
-                // ===== Reporting =====
-                async function generateReport(type) {
-                    const acct = document.getElementById('report-account').value || 'ALL';
-                    const output = document.getElementById('reportOutput');
-                    output.value = "Generating report...\n";
-                    try {
-                        if (type === 'HOLDINGS') {
-                            const data = await fetch(API_BASE + '/positions').then(r => r.json());
-                            const filtered = acct === 'ALL' ? data : data.filter(p => p.accountId === acct);
-                            output.value = JSON.stringify(filtered, null, 2);
-                        } else {
-                            const data = await fetch(API_BASE + '/transactions').then(r => r.json());
-                            const filtered = acct === 'ALL' ? data : data.filter(p => p.accountId === acct);
-                            output.value = JSON.stringify(filtered, null, 2);
-                        }
-                        showToast("Report generated!");
-                    } catch (err) { output.value = "Error: " + err.message; }
-                }
-
-                // ===== Init =====
-                document.addEventListener('DOMContentLoaded', () => {
-                    loadDashboardData();
+            try {
+                const response = await fetch(API_BASE + '/instructions/internal', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(demoData)
                 });
-            </script>
+
+                if (response.ok) {
+                    showToast('Internal Instruction Created');
+                    loadInstructions();
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        // ===== Generate Outbound =====
+        async function generateOutbound(event) {
+            event.preventDefault();
+            const isin = document.getElementById('ob-isin').value;
+            const accountId = document.getElementById('ob-account').value;
+            const quantity = document.getElementById('ob-qty').value;
+            const movementType = document.getElementById('ob-movement').value;
+
+            try {
+                const params = new URLSearchParams({ isin, accountId, quantity, movementType });
+                const response = await fetch(API_BASE + '/outbound/generate?' + params.toString(), { method: 'POST' });
+                const result = await response.text();
+
+                if (response.ok) {
+                    // Try to format the XML nicely
+                    try {
+                        const parser = new DOMParser();
+                        const xmlDoc = parser.parseFromString(result, 'text/xml');
+                        const serializer = new XMLSerializer();
+                        const formatted = formatXml(serializer.serializeToString(xmlDoc));
+                        document.getElementById('outboundXml').value = formatted;
+                    } catch {
+                        document.getElementById('outboundXml').value = result;
+                    }
+                    showToast('Outbound instruction generated!');
+                } else {
+                    document.getElementById('outboundXml').value = 'Error: ' + result;
+                    showToast('Generation failed', 'error');
+                }
+            } catch (err) {
+                showToast('Connection error', 'error');
+            }
+        }
+
+        function formatXml(xml) {
+            let formatted = '';
+            let indent = '';
+            xml.split(/>\s*</).forEach(node => {
+                if (node.match(/^\/\w/)) indent = indent.substring(2);
+                formatted += indent + '<' + node + '>\n';
+                if (node.match(/^<?\w[^>]*[^\/]$/) && !node.startsWith('?')) indent += '  ';
+            });
+            return formatted.substring(1, formatted.length - 2);
+        }
+
+        function copyOutbound() {
+            const xml = document.getElementById('outboundXml').value;
+            if (!xml) return;
+            navigator.clipboard.writeText(xml);
+            showToast('Copied to clipboard!');
+        }
+
+        function downloadOutbound() {
+            const xml = document.getElementById('outboundXml').value;
+            if (!xml) return;
+            const blob = new Blob([xml], { type: 'application/xml' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'settlement-instruction.xml';
+            a.click();
+            showToast('File downloaded!');
+        }
+
+        // ===== Reporting =====
+        async function generateReport(type) {
+            const acct = document.getElementById('report-account').value || 'ALL';
+            const output = document.getElementById('reportOutput');
+            output.value = "Generating report...\n";
+            try {
+                if (type === 'HOLDINGS') {
+                    const data = await fetch(API_BASE + '/positions').then(r => r.json());
+                    const filtered = acct === 'ALL' ? data : data.filter(p => p.accountId === acct);
+                    output.value = JSON.stringify(filtered, null, 2);
+                } else {
+                    const data = await fetch(API_BASE + '/transactions').then(r => r.json());
+                    const filtered = acct === 'ALL' ? data : data.filter(p => p.accountId === acct);
+                    output.value = JSON.stringify(filtered, null, 2);
+                }
+                showToast("Report generated!");
+            } catch (err) { output.value = "Error: " + err.message; }
+        }
+
+        // ===== Init =====
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDashboardData();
+        });
+    </script>
 </body>
 
 </html>
