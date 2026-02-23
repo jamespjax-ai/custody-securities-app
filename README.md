@@ -1,7 +1,7 @@
 # 🏛️ Custody Securities Application
 
-[![Spring Boot](https://img.shields.io/badge/Spring--Boot-3.2.2-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white)](https://spring.io/projects/spring-boot)
-[![Java](https://img.shields.io/badge/Java-17-007396?style=for-the-badge&logo=java&logoColor=white)](https://www.oracle.com/java/)
+[![Spring Boot](https://img.shields.io/badge/Spring--Boot-3.5.5-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Java](https://img.shields.io/badge/Java-25-007396?style=for-the-badge&logo=java&logoColor=white)](https://www.oracle.com/java/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 > **A high-performance settlement and inventory management engine for modern digital custody operations.**
@@ -37,8 +37,8 @@ A sleek, responsive frontend that provides clear visibility into transaction aud
 
 ## 💻 Tech Stack
 
-- **Backend:** [Spring Boot 3.2.2](https://spring.io/)
-- **Language:** [Java 17](https://openjdk.java.net/)
+- **Backend:** [Spring Boot 3.5.5](https://spring.io/)
+- **Language:** [Java 25](https://openjdk.java.net/)
 - **Data Layer:** [Spring Data JPA](https://spring.io/projects/spring-data-jpa)
 - **Database:** [H2](https://www.h2database.com/html/main.html) (In-memory for lightning-fast processing)
 - **Messaging:** [Jakarta XML Binding (JAXB)](https://eclipse-ee4j.github.io/jaxb-ri/) for ISO 20022 parsing
@@ -50,7 +50,7 @@ A sleek, responsive frontend that provides clear visibility into transaction aud
 
 ### Prerequisites
 
-- **JDK 17** or higher
+- **JDK 25** or higher
 - **Maven 3.8+**
 
 ### Quick Start

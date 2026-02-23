@@ -11,20 +11,25 @@ echo   Custody Securities Starter
 echo ==========================================
 echo.
 
-:: Set environment - Try to use system JAVA_HOME if not defined
-if "%JAVA_HOME%"=="" (
-    set "JAVA_EXE=java"
-) else (
+:: Set environment - Try local JDK 25 first, then JAVA_HOME, then PATH
+if exist "%~dp0..\jdk-25.0.2\bin\java.exe" (
+    set "JAVA_EXE=%~dp0..\jdk-25.0.2\bin\java.exe"
+    set "JAVA_HOME=%~dp0..\jdk-25.0.2"
+) else if not "%JAVA_HOME%"=="" (
     set "JAVA_EXE=%JAVA_HOME%\bin\java.exe"
+) else (
+    set "JAVA_EXE=java"
 )
 set "APP_JAR=target\custody-app-0.0.1-SNAPSHOT.jar"
 
 cd /d "%~dp0"
 echo [%DATE% %TIME%] Working Directory: %CD% >> "%LOG_FILE%"
 
-:: Check if JAVA_HOME is valid
-if not exist "%JAVA_EXE%" (
-    echo [ERROR] Java executable not found at: %JAVA_EXE%
+:: Check if java is functional
+"%JAVA_EXE%" -version >nul 2>&1
+if errorlevel 1 (
+    echo [ERROR] Java executable not found or not functional.
+    echo [DEBUG] Attempted to use: %JAVA_EXE%
     echo [%DATE% %TIME%] ERROR: Java not found >> "%LOG_FILE%"
     pause
     exit /b 1
