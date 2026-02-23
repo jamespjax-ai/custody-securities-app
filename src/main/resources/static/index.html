@@ -1103,8 +1103,37 @@
             <div class="card">
                 <div class="card-header">
                     <div class="card-title">🔔 Corporate Action Events</div>
-                    <button class="btn btn-primary" onclick="announceDemo()">📢 Post Demo Dividend</button>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn btn-secondary" onclick="openAnnounceModal()">📢 Announce Dividend</button>
+                        <button class="btn btn-primary" onclick="announceDemo()">🚀 Quick Demo</button>
+                    </div>
                 </div>
+
+                <!-- Announcement Form (Collapsible/Modal-like) -->
+                <div id="announceForm" class="card"
+                    style="display:none; margin-bottom:24px; background: rgba(56, 189, 248, 0.05); border: 1px dashed var(--accent-indigo);">
+                    <div class="card-title" style="font-size:15px; margin-bottom:16px;">New Digital Dividend
+                        Announcement</div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                        <input type="text" id="ca-isin" placeholder="ISIN (e.g. US0378331005)" class="xml-editor"
+                            style="min-height:auto;">
+                        <input type="text" id="ca-eventid" placeholder="Event ID" class="xml-editor"
+                            style="min-height:auto;">
+                        <div>
+                            <label class="editor-label">Snaphot (Record Date & Time)</label>
+                            <input type="datetime-local" id="ca-recordDate" class="xml-editor" style="min-height:auto;">
+                        </div>
+                        <div>
+                            <label class="editor-label">Ex-Date & Time</label>
+                            <input type="datetime-local" id="ca-exDate" class="xml-editor" style="min-height:auto;">
+                        </div>
+                    </div>
+                    <div class="action-row">
+                        <button class="btn btn-primary" onclick="submitAnnouncement()">Confirm Announcement</button>
+                        <button class="btn btn-secondary" onclick="toggleAnnounceForm(false)">Cancel</button>
+                    </div>
+                </div>
+
                 <div class="table-container">
                     <table>
                         <thead>
@@ -1112,9 +1141,9 @@
                                 <th>Event ID</th>
                                 <th>ISIN</th>
                                 <th>Type</th>
-                                <th>Ex-Date</th>
+                                <th>Record Date (Snapshot)</th>
                                 <th>Status</th>
-                                <th>Operation</th>
+                                <th>Digital Workflow</th>
                             </tr>
                         </thead>
                         <tbody id="caTableBody">
@@ -1123,6 +1152,30 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Entitlement Preview Area -->
+                <div id="entitlementPreview" class="card"
+                    style="display:none; margin-top:24px; border-color:var(--accent-cyan); background:rgba(14,165,233,0.03);">
+                    <div class="card-header">
+                        <div class="card-title">🔍 Eligibility & Entitlement Preview</div>
+                        <button class="btn btn-secondary" style="padding:4px 8px; font-size:11px;"
+                            onclick="document.getElementById('entitlementPreview').style.display='none'">Close
+                            Preview</button>
+                    </div>
+                    <div class="table-container">
+                        <table style="font-size:13px;">
+                            <thead>
+                                <tr style="background:rgba(14,165,233,0.1);">
+                                    <th>Account</th>
+                                    <th>Eligible Qty</th>
+                                    <th>Dividend Rate</th>
+                                    <th>Net Entitlement</th>
+                                </tr>
+                            </thead>
+                            <tbody id="previewTableBody"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1342,9 +1395,24 @@
                 const events = await res.json();
                 document.getElementById('caTableBody').innerHTML = events.map(e => `
                     <tr>
-                        <td>${e.eventId}</td><td>${e.isin}</td><td>${e.eventType}</td><td>${e.exDate || '-'}</td>
-                        <td>${e.status}</td>
-                        <td>${e.status === 'ANNOUNCED' ? `<button onclick="processCA('${e.eventId}', '${e.isin}')" class="btn btn-primary" style="padding:4px 8px; font-size:11px;">Process</button>` : '-'}</td>
+                        <td class="isin-cell">${e.eventId}</td>
+                        <td class="isin-cell">${e.isin}</td>
+                        <td><span class="badge" style="background:rgba(56,189,248,0.1); padding:2px 8px; border-radius:4px;">${e.eventType}</span></td>
+                        <td style="font-family:'JetBrains Mono'; font-size:12px;">${e.recordDate ? e.recordDate.replace('T', ' ') : '-'}</td>
+                        <td>
+                            <span style="color: ${e.status === 'COMPLETED' ? 'var(--accent-emerald)' : 'var(--accent-amber)'}">
+                                ${e.status}
+                            </span>
+                        </td>
+                        <td>
+                            ${e.status === 'ANNOUNCED' ? `
+                                <div style="display:flex; gap:6px;">
+                                    <button onclick="checkEligibility('${e.eventId}')" class="btn btn-secondary" style="padding:6px 10px; font-size:11px; color:var(--accent-cyan); border-color:var(--accent-cyan);">📋 Eligibility</button>
+                                    <button onclick="checkEntitlement('${e.eventId}')" class="btn btn-secondary" style="padding:6px 10px; font-size:11px; color:var(--accent-indigo); border-color:var(--accent-indigo);">💰 Entitlement</button>
+                                    <button onclick="processDividendUI('${e.eventId}')" class="btn btn-primary" style="padding:6px 12px; font-size:11px; background:var(--accent-emerald);">🛡️ Execute TX</button>
+                                </div>
+                            ` : '<span style="color:var(--accent-emerald); font-weight:700;">✅ SETTLED</span>'}
+                        </td>
                     </tr>
                 `).join('') || '<tr><td colspan="6" class="empty-state">No events</td></tr>';
             } catch (err) { console.error(err); }
@@ -1366,6 +1434,96 @@
             loadDashboardData();
             loadPositions();
             showToast("Bonus Processed");
+        }
+
+        function openAnnounceModal() {
+            toggleAnnounceForm(true);
+            document.getElementById('ca-recordDate').value = new Date().toISOString().slice(0, 16);
+            document.getElementById('ca-exDate').value = new Date().toISOString().slice(0, 16);
+            document.getElementById('ca-eventid').value = 'DIV-' + Math.floor(Math.random() * 1000);
+        }
+
+        function toggleAnnounceForm(show) {
+            document.getElementById('announceForm').style.display = show ? 'block' : 'none';
+        }
+
+        async function submitAnnouncement() {
+            const isin = document.getElementById('ca-isin').value;
+            const eventId = document.getElementById('ca-eventid').value;
+            const recordDate = document.getElementById('ca-recordDate').value;
+            const exDate = document.getElementById('ca-exDate').value;
+
+            if (!isin || !eventId) return showToast("Please fill all fields", "error");
+
+            await fetch(API_BASE + '/corporate-actions/announce', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    eventId,
+                    isin,
+                    eventType: 'DIVI',
+                    recordDate,
+                    exDate
+                })
+            });
+
+            toggleAnnounceForm(false);
+            loadCAEvents();
+            showToast("Dividend Announced at " + recordDate);
+        }
+
+        async function processDividendUI(eventId) {
+            const rate = prompt("DVP Pay — Enter final dividend rate ($):", "1.25");
+            if (!rate) return;
+
+            if (!confirm(`Are you sure you want to EXECUTE and SETTLE transactions for ${eventId}? This will update the ledger.`)) return;
+
+            try {
+                await fetch(`${API_BASE}/corporate-actions/process/dividend?eventId=${eventId}&rate=${rate}`, { method: 'POST' });
+                showToast("Dividend Settled & Transactions Logged");
+                loadCAEvents();
+                loadDashboardData();
+                document.getElementById('entitlementPreview').style.display = 'none';
+            } catch (err) {
+                showToast("Execution failed", "error");
+            }
+        }
+
+        async function checkEligibility(eventId) {
+            // Eligibility just looks at quantities (rate=1 for simplicity in view)
+            const results = await fetch(`${API_BASE}/corporate-actions/calculate-entitlements?eventId=${eventId}&rate=0`).then(r => r.json());
+            renderPreview(results, 0, false);
+            showToast("Eligibility list retrieved from Record Date snapshot");
+        }
+
+        async function checkEntitlement(eventId) {
+            const rate = prompt("Enter projection rate ($):", "1.25");
+            if (!rate) return;
+            const results = await fetch(`${API_BASE}/corporate-actions/calculate-entitlements?eventId=${eventId}&rate=${rate}`).then(r => r.json());
+            renderPreview(results, rate, true);
+            showToast("Entitlements calculated for snapshot");
+        }
+
+        function renderPreview(results, rate, showAmount) {
+            const preview = document.getElementById('entitlementPreview');
+            const tbody = document.getElementById('previewTableBody');
+            preview.style.display = 'block';
+
+            if (results.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No eligible holders found for this snapshot.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = results.map(r => `
+                <tr>
+                    <td class="account-cell">${r.accountId}</td>
+                    <td class="qty-cell">${r.eligibleQuantity}</td>
+                    <td>${showAmount ? '$' + rate : 'N/A'}</td>
+                    <td class="qty-cell ${showAmount ? 'qty-positive' : ''}">${showAmount ? '$' + r.entitlementAmount : '—'}</td>
+                </tr>
+            `).join('');
+
+            preview.scrollIntoView({ behavior: 'smooth' });
         }
 
         // ===== File Upload =====
@@ -1671,7 +1829,7 @@
         }
 
         function getStatusBg(status) {
-            if (status === 'SETTLED') return 'rgba(16, 185, 129, 0.1)';
+            if (status === 'SETTLED' || status === 'SETTLED_UNMATCHED') return 'rgba(16, 185, 129, 0.1)';
             if (status === 'REJECTED') return 'rgba(244, 63, 94, 0.1)';
             if (status === 'MATCHED') return 'rgba(6, 182, 212, 0.1)';
             if (status === 'PENDING_MATCH') return 'rgba(245, 158, 11, 0.1)';
@@ -1679,7 +1837,7 @@
         }
 
         function getStatusColor(status) {
-            if (status === 'SETTLED') return 'var(--accent-emerald)';
+            if (status === 'SETTLED' || status === 'SETTLED_UNMATCHED') return 'var(--accent-emerald)';
             if (status === 'REJECTED') return 'var(--accent-rose)';
             if (status === 'MATCHED') return 'var(--accent-cyan)';
             if (status === 'PENDING_MATCH') return 'var(--accent-amber)';

@@ -1,6 +1,7 @@
 package com.custody.app.adapter.in;
 
 import com.custody.app.domain.model.CorporateActionEvent;
+import com.custody.app.domain.model.EntitlementResult;
 import com.custody.app.domain.service.CorporateActionService;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,5 +31,15 @@ public class CorporateActionController {
     @PostMapping("/process/bonus")
     public void processBonus(@RequestParam String eventId, @RequestParam String isin, @RequestParam BigDecimal ratio) {
         corporateActionService.processBonusIssue(eventId, isin, ratio);
+    }
+
+    @PostMapping("/process/dividend")
+    public void processDividend(@RequestParam String eventId, @RequestParam BigDecimal rate) {
+        corporateActionService.processDividend(eventId, rate);
+    }
+
+    @GetMapping("/calculate-entitlements")
+    public List<EntitlementResult> getEntitlements(@RequestParam String eventId, @RequestParam BigDecimal rate) {
+        return corporateActionService.calculateEntitlements(eventId, rate);
     }
 }

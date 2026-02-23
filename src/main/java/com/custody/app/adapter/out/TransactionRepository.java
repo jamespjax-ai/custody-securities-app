@@ -11,4 +11,9 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     List<Transaction> findByAccountId(String accountId);
 
     List<Transaction> findByIsin(String isin);
+
+    List<Transaction> findByAccountIdAndIsin(String accountId, String isin);
+
+    List<Transaction> findByAccountIdAndIsinAndExecutionTimeAfter(String accountId, String isin,
+            java.time.LocalDateTime time);
 }

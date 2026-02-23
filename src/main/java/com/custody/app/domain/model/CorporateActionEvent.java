@@ -8,7 +8,7 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "corporate_actions")
@@ -23,8 +23,8 @@ public class CorporateActionEvent {
     private String eventId;
     private String isin;
     private String eventType; // DIVI, DVCA, BONY, etc.
-    private LocalDate exDate;
-    private LocalDate recordDate;
-    private LocalDate paymentDate;
+    private LocalDateTime exDate;
+    private LocalDateTime recordDate;
+    private LocalDateTime paymentDate;
     private String status; // ANNOUNCED, COMPLETED
 }

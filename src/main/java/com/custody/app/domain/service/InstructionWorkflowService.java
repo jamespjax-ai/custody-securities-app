@@ -54,13 +54,15 @@ public class InstructionWorkflowService {
         Instruction instruction = new Instruction(txId, isin, accountId, qty, movementType, "DEPOSITORY", "VALIDATED");
         instructionRepository.save(instruction);
 
-        // Step 5: Trigger Auto-matching
+        // Step 3: Update Positions Immediately (as requested: "every time instructions
+        // are processed")
+        positionService.updatePositionWithProcess(accountId, isin, qty, movementType, "SETTLEMENT", txId);
+
+        // Step 4: Attempt Matching
         Optional<Instruction> match = matchingService.findPerfectMatch(instruction);
         if (match.isPresent()) {
             matchingService.performMatch(instruction, match.get());
 
-            // Step 8: Update transactions and positions
-            positionService.updatePositionWithProcess(accountId, isin, qty, movementType, "SETTLEMENT", txId);
             instruction.setStatus("SETTLED");
             match.get().setStatus("SETTLED");
             instructionRepository.save(instruction);
@@ -68,9 +70,10 @@ public class InstructionWorkflowService {
 
             return "Instruction MATCHED and SETTLED: " + txId;
         } else {
-            instruction.setStatus("PENDING_MATCH");
+            // Even if not matched yet, we've updated positions as requested
+            instruction.setStatus("SETTLED_UNMATCHED"); // Indicating it updated inventory but has no internal pair
             instructionRepository.save(instruction);
-            return "Instruction VALIDATED, Pending Match: " + txId;
+            return "Instruction SETTLED (Position Updated), Pending Match: " + txId;
         }
     }
 
